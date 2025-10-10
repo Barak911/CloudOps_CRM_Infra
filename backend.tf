@@ -1,9 +1,9 @@
 terraform {
   backend "s3" {
-    bucket         = "tf-state-demo-crm"            # ← your S3 bucket
+    bucket         = "tf-state-demo-crm"
     key            = "cloudops_crm/terraform.tfstate"
-    region         = "us-east-1"                    # ← hard-coded region
-    dynamodb_table = "terraform-locks"              # ← your DynamoDB lock table
+    region         = "il-central-1"   # ← correct region
+    dynamodb_table = "terraform-locks"
     encrypt        = true
   }
 }
