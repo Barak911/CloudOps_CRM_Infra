@@ -1,12 +1,22 @@
-# eks.tf
+data "aws_vpc" "default" { default = true }
+
+data "aws_subnets" "default" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+}
+
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 20.0"          # latest major
+  version = "~> 20.0"
 
   cluster_name    = var.cluster_name
   cluster_version = "1.29"
 
-  # Minimal managed node group
+  vpc_id     = data.aws_vpc.default.id
+  subnet_ids = data.aws_subnets.default.ids
+
   eks_managed_node_groups = {
     default = {
       desired_size   = 1
@@ -17,7 +27,5 @@ module "eks" {
     }
   }
 
-  tags = {
-    project = "CloudOps_CRM"
-  }
+  tags = { project = "CloudOps_CRM" }
 }
