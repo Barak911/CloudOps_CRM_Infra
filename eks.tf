@@ -5,7 +5,6 @@ module "eks" {
 
   cluster_name    = var.cluster_name
   cluster_version = "1.29"
-  region          = var.aws_region
 
   # Minimal managed node group
   eks_managed_node_groups = {
