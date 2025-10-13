@@ -32,4 +32,35 @@ module "eks" {
   }
 
   tags = { project = "CloudOps_CRM" }
+
+  # Enable cluster access management
+  enable_cluster_creator_admin_permissions = true
+
+  # Grant access to additional IAM principals
+  access_entries = {
+    github_actions = {
+      principal_arn = var.github_actions_role_arn
+      type          = "STANDARD"
+      policy_associations = {
+        admin = {
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = {
+            type = "cluster"
+          }
+        }
+      }
+    }
+    developer = {
+      principal_arn = var.developer_user_arn
+      type          = "STANDARD"
+      policy_associations = {
+        admin = {
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = {
+            type = "cluster"
+          }
+        }
+      }
+    }
+  }
 }

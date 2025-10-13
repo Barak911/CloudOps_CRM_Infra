@@ -7,3 +7,7 @@ terraform.tfstate
 terraform.tfstate.*
 tfplan
 crash.log
+
+
+# Local examples
+example_terraform.tfvars
