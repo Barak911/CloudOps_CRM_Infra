@@ -38,8 +38,9 @@ module "eks" {
 
   # Grant access to additional IAM principals
   access_entries = {
+    # GitHub Actions role - now created in github-oidc.tf
     github_actions = {
-      principal_arn = var.github_actions_role_arn
+      principal_arn = aws_iam_role.github_actions.arn
       type          = "STANDARD"
       policy_associations = {
         admin = {
@@ -50,6 +51,7 @@ module "eks" {
         }
       }
     }
+    # Developer user access
     developer = {
       principal_arn = var.developer_user_arn
       type          = "STANDARD"
@@ -63,4 +65,7 @@ module "eks" {
       }
     }
   }
+
+  # Ensure IAM role is created before cluster access entries
+  depends_on = [aws_iam_role.github_actions]
 }
