@@ -22,8 +22,8 @@ prometheus:
             requests:
               storage: 10Gi
 
-    # Retention period
-    retention: 7d
+    # Retention period (reduced to 2d due to disk space constraints)
+    retention: 2d
 
     # Service monitors to discover
     serviceMonitorSelectorNilUsesHelmValues: false
