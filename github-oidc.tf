@@ -30,7 +30,7 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
 }
 
 resource "aws_iam_role" "github_actions" {
-  name               = "github-oidc-demo-crm"
+  name               = "github-actions-ecr-eks"
   assume_role_policy = data.aws_iam_policy_document.github_actions_assume_role.json
   description        = "Role for GitHub Actions to deploy to EKS"
 
