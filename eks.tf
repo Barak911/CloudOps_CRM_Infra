@@ -5,6 +5,12 @@ data "aws_subnets" "default" {
     name   = "vpc-id"
     values = [data.aws_vpc.default.id]
   }
+
+  # Exclude us-east-1e which is not supported by EKS
+  filter {
+    name   = "availability-zone"
+    values = ["us-east-1a", "us-east-1b", "us-east-1c", "us-east-1d", "us-east-1f"]
+  }
 }
 
 module "eks" {
@@ -34,13 +40,26 @@ module "eks" {
   tags = { project = "CloudOps_CRM" }
 
   # Enable cluster access management
-  enable_cluster_creator_admin_permissions = true
+  enable_cluster_creator_admin_permissions = false
 
   # Grant access to additional IAM principals
   access_entries = {
     # GitHub Actions role - now created in github-oidc.tf
     github_actions = {
       principal_arn = aws_iam_role.github_actions.arn
+      type          = "STANDARD"
+      policy_associations = {
+        admin = {
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = {
+            type = "cluster"
+          }
+        }
+      }
+    }
+    # Developer user access
+    developer = {
+      principal_arn = var.developer_user_arn
       type          = "STANDARD"
       policy_associations = {
         admin = {
