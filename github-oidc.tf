@@ -64,7 +64,15 @@ resource "aws_iam_policy" "github_actions_eks" {
           "eks:DescribeCluster",
           "eks:ListClusters",
           "eks:DescribeNodegroup",
-          "eks:ListNodegroups"
+          "eks:ListNodegroups",
+          "eks:AccessKubernetesApi",
+          "eks:ListAccessEntries",
+          "eks:DescribeAccessEntry",
+          "eks:CreateAccessEntry",
+          "eks:DeleteAccessEntry",
+          "eks:ListAssociatedAccessPolicies",
+          "eks:AssociateAccessPolicy",
+          "eks:DisassociateAccessPolicy"
         ]
         Resource = "*"
       }
