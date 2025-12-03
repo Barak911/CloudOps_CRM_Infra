@@ -33,7 +33,7 @@ module "eks" {
       max_size       = 1
       min_size       = 1
       instance_types = ["t3a.medium"]
-      capacity_type  = "SPOT"
+      capacity_type  = "ON_DEMAND"
     }
   }
 
