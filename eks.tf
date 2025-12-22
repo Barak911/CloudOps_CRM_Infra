@@ -20,6 +20,9 @@ module "eks" {
   cluster_name    = var.cluster_name
   cluster_version = "1.31"
 
+  # Match existing cluster setting to prevent replacement
+  bootstrap_self_managed_addons = false
+
   vpc_id     = data.aws_vpc.default.id
   subnet_ids = data.aws_subnets.default.ids
 
