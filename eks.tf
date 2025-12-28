@@ -20,21 +20,8 @@ module "eks" {
   cluster_name    = var.cluster_name
   cluster_version = "1.31"
 
-  # Match existing cluster setting to prevent replacement
-  bootstrap_self_managed_addons = false
-
-  # Essential EKS addons for cluster networking
-  cluster_addons = {
-    vpc-cni = {
-      most_recent = true
-    }
-    kube-proxy = {
-      most_recent = true
-    }
-    coredns = {
-      most_recent = true
-    }
-  }
+  # Use self-managed addons bootstrapped on nodes (simpler, avoids dependency issues)
+  bootstrap_self_managed_addons = true
 
   vpc_id     = data.aws_vpc.default.id
   subnet_ids = data.aws_subnets.default.ids
