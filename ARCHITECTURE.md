@@ -12,8 +12,7 @@ CloudOps_CRM/           # Application code (Python Flask REST API)
 ├── Dockerfile          # Container image definition
 ├── .github/workflows/  # CI/CD pipelines
 │   ├── cicd.yml            # Continuous deployment on push to main
-│   ├── initial-deploy.yml  # Quick deployment (app + MongoDB only)
-│   ├── full-deploy.yml     # Full stack with observability (EFK + optional Prometheus)
+│   ├── full-deploy.yml     # Full stack with observability (EFK + Prometheus)
 │   └── cleanup-deployment.yml  # Resource cleanup before terraform destroy
 └── test_*.py           # Unit and E2E tests
 
@@ -34,48 +33,11 @@ CloudOps_CRM_Cluster/   # Kubernetes manifests (Helm charts)
 └── nginx-ingress-values.yaml  # Ingress Controller configuration
 ```
 
-## Deployment Modes
+## Deployment Architecture
 
-### Mode 1: Initial Deployment (Quick Start)
+### Full Stack Deployment
 
-Direct LoadBalancer access to CRM application:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      Internet/Users                         │
-└───────────────────────┬─────────────────────────────────────┘
-                        │
-                        ▼
-┌───────────────────────────────────────────────────────────┐
-│              AWS Network Load Balancer                    │
-│          (Created by K8S LoadBalancer Service)            │
-└───────────────────────┬───────────────────────────────────┘
-                        │
-                        ▼
-              ┌───────────────────┐
-              │   CRM App Pod(s)  │
-              │  (Python Flask)   │
-              │   Port: 5000      │
-              └─────────┬─────────┘
-                        │
-                        ▼
-              ┌───────────────────┐
-              │   MongoDB Pod     │
-              │  (StatefulSet)    │
-              │   Port: 27017     │
-              │   + EBS Volume    │
-              └───────────────────┘
-```
-
-**Components:**
-- CRM App Deployment (1 replica, LoadBalancer service)
-- MongoDB StatefulSet (1 replica, 5Gi EBS gp3 volume)
-
-**Workflow:** `initial-deploy.yml`
-
-### Mode 2: Full Stack Deployment (Production)
-
-3-tier architecture with Nginx Ingress and observability:
+3-tier architecture with Nginx Ingress and complete observability:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
@@ -137,7 +99,7 @@ Direct LoadBalancer access to CRM application:
 - Elasticsearch (ClusterIP, HTTPS, 5Gi EBS)
 - Kibana (ClusterIP, proxied via Ingress at /kibana)
 - Fluentd DaemonSet (log collection)
-- Prometheus/Grafana (optional, monitoring namespace)
+- Prometheus/Grafana (monitoring namespace)
 
 **Workflow:** `full-deploy.yml`
 
@@ -314,8 +276,7 @@ Direct LoadBalancer access to CRM application:
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
 | `cicd.yml` | Push to main | Continuous deployment - build, test, deploy |
-| `initial-deploy.yml` | Manual | Quick first deployment (app + MongoDB only) |
-| `full-deploy.yml` | Manual | Full stack with EFK + optional Prometheus |
+| `full-deploy.yml` | Manual | Full stack with EFK + Prometheus |
 | `cleanup-deployment.yml` | Manual | Cleanup before terraform destroy |
 
 ### Workflow Details
@@ -329,6 +290,7 @@ Direct LoadBalancer access to CRM application:
 - Stage 1: Deploy Elasticsearch first (creates TLS certificates)
 - Stage 2: Deploy Kibana (requires ES certificates to exist)
 - Creates ES index templates and ingest pipelines for logs
+- Deploys Prometheus/Grafana monitoring stack
 
 **cleanup-deployment.yml:**
 - Deletes LoadBalancer services first (prevents orphaned AWS ELBs)
@@ -390,7 +352,7 @@ Direct LoadBalancer access to CRM application:
 - `event.dataset` - Log dataset identifier
 - `event.decoded` - Parsed JSON from message (via ingest pipeline)
 
-### Prometheus/Grafana (Monitoring - Optional)
+### Prometheus/Grafana (Monitoring)
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
@@ -491,14 +453,11 @@ kubectl get nodes
 
 ### Deploy Application
 ```bash
-# Quick deployment (app + MongoDB)
-# Use initial-deploy.yml workflow
-
-# Full stack (app + MongoDB + EFK + optional Prometheus)
-# Use full-deploy.yml workflow
+# Full stack deployment (app + MongoDB + EFK + Prometheus)
+# Use full-deploy.yml workflow in GitHub Actions
 ```
 
-### Access URLs (Full Stack Mode)
+### Access URLs
 ```bash
 INGRESS_URL=$(kubectl get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
 echo "CRM App:  http://$INGRESS_URL/"
